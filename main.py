@@ -84,4 +84,8 @@ def click(click: RowCol):
     
     context["response"] = ms.click(click.row, click.col)
 
+    # Check if we won
+    if ms.check_win():
+        context["win"] = 'Congratulations!'
+
     return context

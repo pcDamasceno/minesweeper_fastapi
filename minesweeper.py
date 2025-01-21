@@ -14,6 +14,7 @@ class Cell:
         self.bombs_around = str(bombs_around)
         return self.is_open
             
+        
     def __repr__(self):
         if self.is_open:
             return str(self.bombs_around)
@@ -27,7 +28,7 @@ class Minesweeper:
         self.bombs_positions = set()
         self.grid = [[Cell() for c in range(col)] for r in range(row)]
         self.game = True
-
+        
     
     def to_json_serializable_grid(self):
         return [[str(cell) for cell in row] for row in self.grid]
@@ -75,6 +76,8 @@ class Minesweeper:
         
     def click(self, x, y):
         bombs_around = 0
+
+        # Check if user clicked somewere impossible
         if (x < 0 or x >= self.row_col[0]) or (y < 0 or y >= self.row_col[1]):
             return 'Out of Bound'
         
@@ -100,5 +103,12 @@ class Minesweeper:
         self.game = True
         self.build_grid()
 
+    def check_win(self):
+        # Look for a cell that is not opened and is not bomb
+        for r in range(self.row_col[0]):
+            for c in range(self.row_col[1]):
+                if not(self.grid[r][c].is_open) and not(self.grid[r][c].is_bomb):
+                    return False
+        return True
     def __repr__(self):
         return str(self.grid)
