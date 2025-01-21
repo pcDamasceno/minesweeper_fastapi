@@ -1,8 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
-import json
-from .minesweeper import Minesweeper
-from typing import Optional
+from minesweeper import Minesweeper
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -70,7 +68,7 @@ def minesweeper(item):
             context["response"] = ms.to_json_serializable_grid()
             return context
         
-        case "get_bombs_pos":
+        case "show_bombs":
             context["response"] = list(ms.bombs_positions)
         case _:    
             context["response"] = "Invalid/ Unkown item"
