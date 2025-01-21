@@ -1,12 +1,15 @@
 ## Instructions
 
-## Build environment
+## Build DOCKER environment
 
 ### Build the docker image
-#docker build . -t fastapi
+docker build . -t fastapi
 
 ### Running it
-#docker run -p 5000:80 fastapi
+docker run -p 5000:80 fastapi
+
+## Running Locally
+fastapi main.py
 
 ---
 ## RUN

@@ -1,20 +1,19 @@
 import random
 import json
 from itertools import product
-from pydantic import BaseModel
 
-class Cell(BaseModel):
-    is_bomb: bool = False
-    is_open: str = ''
-    bombs_around: str = ''
+class Cell:
+    def __init__(self, is_bomb=False, is_open=False):
+        self.is_bomb = is_bomb
+        self.is_open = is_open
+        self.bombs_around = False
 
     # Open a cell, and add the number of bombs around it
     def open(self, bombs_around):
-        self.is_open = 'True'
+        self.is_open = True
         self.bombs_around = str(bombs_around)
         return self.is_open
-    
-        
+            
     def __repr__(self):
         if self.is_open:
             return str(self.bombs_around)
@@ -29,10 +28,14 @@ class Minesweeper:
         self.grid = [[Cell() for c in range(col)] for r in range(row)]
         self.game = True
 
+    
+    def to_json_serializable_grid(self):
+        return [[str(cell) for cell in row] for row in self.grid]
+        
     #random generation for number of bombs
     def _gen_num_bombs(self):
         #Limit the amount of bombs to half of the grid
-        self.n_of_bombs = random.randint(1, (self.row_col[0]*self.row_col[1])/2)
+        self.n_of_bombs = random.randint(1, (self.row_col[0]*self.row_col[1]) // 2)
         return self.n_of_bombs
 
     def _gen_pos_bombs(self):
@@ -72,13 +75,14 @@ class Minesweeper:
         
     def click(self, x, y):
         bombs_around = 0
-
+        if (x < 0 or x >= self.row_col[0]) or (y < 0 or y >= self.row_col[1]):
+            return 'Out of Bound'
+        
         if self.grid[x][y].is_bomb:
             self.game = False
             return "BOOOM!" 
         
         neighbors = self.list_neigh(x, y)
-        
         # number of bombs around us
         for n in neighbors:
             if self.grid[n[0]][n[1]].is_bomb:
@@ -87,7 +91,7 @@ class Minesweeper:
         # save that
         self.grid[x][y].open(bombs_around)
         
-        return self.grid
+        return self.to_json_serializable_grid()
         
     def show_grid(self):
         return json.dumps(self.grid, indent=4)

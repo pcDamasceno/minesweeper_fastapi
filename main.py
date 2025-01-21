@@ -3,9 +3,29 @@ from fastapi.responses import Response
 import json
 from .minesweeper import Minesweeper
 from typing import Optional
+from pydantic import BaseModel
 
 app = FastAPI()
-ms: Optional[Minesweeper] = None
+app.state.ms = None
+
+class RowCol(BaseModel):
+    row: int
+    col: int
+
+
+def start_game(row=10, col=10):
+    # Initialize the Minesweeper game once at startup
+    app.state.ms = Minesweeper(row, col)
+    app.state.ms.build_grid()
+    return app.state.ms
+
+def get_game_instance():
+    ms = app.state.ms 
+    if ms is None:
+        raise HTTPException(status_code=500, detail="Game not started.")
+    if not ms.game:
+        raise HTTPException(status_code=500, detail="You Hit a Bomb, restart to continue")
+    return ms
 
 @app.get("/")
 def instructions():
@@ -14,44 +34,54 @@ def instructions():
     }
     return context
 
-@app.get('/minesweeper/{item}')
-def minesweeper(
-    item: str,
-    row: int = 10,
-    col: int = 10,
-    click_row = False,
-    click_col = False
-    ) -> dict:
+# Start the game
+@app.get("/start")
+def start(row_col: RowCol) -> dict:
+    context = {
+        "requested": f"Grid {row_col.row}x{row_col.col}"
+    }
 
-    global ms
+
+    ms = start_game(row_col.row, row_col.col)
+    
+    context["status"] = (
+        f"Game Started: rows: {row_col.row}, cols: {row_col.col} "
+        f"Number of bombs: {ms.n_of_bombs}"
+    )
+
+    context["response"] = ms.to_json_serializable_grid()
+
+
+    return context
+
+# Get info after it started
+@app.get("/minesweeper/{item}")
+def minesweeper(item):
+    ms = get_game_instance()
+
     context = {
         "requested": item
     }
 
     match item:
-        case 'start':
-            ms = Minesweeper(row, col)
-            context['status'] = f"Game Started: rows: {row}, cols: {col}"
-            context['response'] = ms.grid
+        case "status":
+            context["response"] = f"Game status is : {ms.game}"
+        case "get_grid":           
+            context["response"] = ms.to_json_serializable_grid()
+            return context
         
-        case 'get_grid':
-            if ms is None:
-                raise HTTPException(status_code=500, detail="Game not started.")
-             
-            context['response'] = ms.grid
-        
-        
-        case 'click':
-            # Make sure we have started
-            if ms is None:
-                raise HTTPException(status_code=500, detail="Game not started.")
-            
-            if (not click_row) or (not click_col):
-                raise HTTPException(status_code=500, detail="Make sure To Click Somewhere")
-            
-            context['response'] = ms.click(click_row, click_col)
-
+        case "get_bombs_pos":
+            context["response"] = list(ms.bombs_positions)
         case _:    
             context["response"] = "Invalid/ Unkown item"
+
+    return context
+
+@app.get("/click")
+def click(click: RowCol):
+    context = {"request": click}
+    ms = get_game_instance()
     
+    context["response"] = ms.click(click.row, click.col)
+
     return context
