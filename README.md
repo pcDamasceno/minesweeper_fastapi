@@ -8,9 +8,6 @@ docker build . -t minesweeper
 ### Running it
 docker run -p 8000:80 minesweeper
 
-## Running FastAPI Locally
-fastapi main.py
-
 ---
 ## Run Locally
 If you already have fastapi on you system
