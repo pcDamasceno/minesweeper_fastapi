@@ -132,9 +132,10 @@ class Minesweeper:
         """Parse through the list and check if we have a cell that is not opened and not bombs
         If there is any cell left unopen that is not a bomb, game is still on
         """
+        
         for row_idx in range(self.grid_coordinates.row):
             for col_idx in range(self.grid_coordinates.col):
-                cell = self.grid_coordinates[row_idx][col_idx]
+                cell = self.grid[row_idx][col_idx]
                 if not cell.is_open and not cell.is_bomb:
                     return False
         return True
