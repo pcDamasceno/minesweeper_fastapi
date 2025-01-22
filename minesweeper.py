@@ -64,50 +64,61 @@ class Minesweeper:
         self._gen_num_bombs()
         self._gen_pos_bombs()
 
-    def list_neigh(self, x: int, y: int) -> list:
+    def list_neigh(self, row_idx: int, col_idx: int) -> list:
+        """
+        Given a cell coordinate
+        Return a list with all the neighbor indexes from this cell
+        """
         # all possible neighbor positions
         neigh_positions = []
-        pairs = list(product((-1, 0, 1), repeat=2))
+        pairs = list(product((-1, 0, 1), repeat=2)) # all combinations of of -1,0,1 in doubles (-1,-1), ....
 
         for pair in pairs:
             if pair[0] == 0 and pair[1] == 0:
                 # this is us
                 continue
 
-            row = x + pair[0]
-            col = y + pair[1]
+            row = row_idx + pair[0]
+            col = col_idx + pair[1]
 
             if row < 0 or col < 0:
                 # we are out of range
                 continue
 
             if row >= self.grid_coordinates.col or col >= self.grid_coordinates.row:
+                # out of range
                 continue
 
             neigh_positions.append((row, col))
 
         return neigh_positions
 
-    def click(self, x, y):
+    def click(self, row_idx, col_idx):
+        """
+        Once we click a cell, it must be opened and checked to see if it is a bomb.
+        If not, assign to its value, the number of bombs around you and return it
+        """
         bombs_around = 0
 
-        # Check if user clicked somewere impossible
-        if (x < 0 or x >= self.grid_coordinates.row) or (y < 0 or y >= self.grid_coordinates.col):
+        # Check if user clicked somewere out of bounds
+        if (row_idx < 0 or row_idx >= self.grid_coordinates.row) or (col_idx < 0 or col_idx >= self.grid_coordinates.col):
             return "Out of Bound"
 
-        if self.grid[x][y].is_bomb:
+        # Hit bomb
+        if self.grid[row_idx][col_idx].is_bomb:
             self.game = False
             return "BOOOM!"
 
-        neighbors = self.list_neigh(x, y)
+        neighbors = self.list_neigh(row_idx, col_idx)
         # number of bombs around us
         for n in neighbors:
             if self.grid[n[0]][n[1]].is_bomb:
                 bombs_around += 1
 
-        # save that
-        self.grid[x][y].open(bombs_around)
+        # assign the bombs_around
+        self.grid[row_idx][col_idx].open(bombs_around)
 
+        # return to the user the updated grid
         return self.to_json_serializable_grid()
 
     def show_grid(self):
@@ -118,10 +129,13 @@ class Minesweeper:
         self.build_grid()
 
     def check_win(self):
-        # Look for a cell that is not opened and is not bomb
-        for r in range(self.grid_coordinates[0]):
-            for c in range(self.grid_coordinates[1]):
-                if not (self.grid[r][c].is_open) and not (self.grid[r][c].is_bomb):
+        """Parse through the list and check if we have a cell that is not opened and not bombs
+        If there is any cell left unopen that is not a bomb, game is still on
+        """
+        for row_idx in range(self.grid_coordinates.row):
+            for col_idx in range(self.grid_coordinates.col):
+                cell = self.grid_coordinates[row_idx][col_idx]
+                if not cell.is_open and not cell.is_bomb:
                     return False
         return True
 
