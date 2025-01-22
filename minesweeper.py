@@ -1,6 +1,12 @@
 import random
 import json
 from itertools import product
+from typing import NamedTuple
+
+
+class GridSize(NamedTuple):
+    row: int
+    col: int
 
 
 class Cell:
@@ -16,18 +22,21 @@ class Cell:
         return self.is_open
 
     def __repr__(self):
-        if self.is_open:
-            return str(self.bombs_around)
-        else:
-            return "X"
+        return str(self.bombs_around) if self.is_open else "X"
+
 
 
 class Minesweeper:
     def __init__(self, row=10, col=10):
-        self.grid_coordinates = (row, col)
+        # Updated grid dimensions to a named tuple
+        self.grid_coordinates = GridSize(row, col)
+
         self.n_of_bombs = 0
         self.bombs_positions = set()
+        
+        # create the grid with 'blank' cells
         self.grid = [[Cell() for c in range(col)] for r in range(row)]
+        # game status
         self.game = True
 
     def to_json_serializable_grid(self):
@@ -36,16 +45,21 @@ class Minesweeper:
     # random generation for number of bombs
     def _gen_num_bombs(self):
         # Limit the amount of bombs to half of the grid
-        self.n_of_bombs = random.randint(1, (self.grid_coordinates[0] * self.grid_coordinates[1]) // 2)
+        self.n_of_bombs = random.randint(1, (self.grid_coordinates.row * self.grid_coordinates.col) // 2)
         return self.n_of_bombs
 
     def _gen_pos_bombs(self):
+        """
+        Gen 2 random numbers to be used as coordinates to the bombs location
+        """
         while len(self.bombs_positions) < self.n_of_bombs:
-            row = random.randrange(0, self.grid_coordinates[0])
-            col = random.randrange(0, self.grid_coordinates[1])
-            self.bombs_positions.add((row, col))
-            self.grid[row][col].is_bomb = True
+            rand_row = random.randrange(0, self.grid_coordinates.row)
+            rand_col = random.randrange(0, self.grid_coordinates.col)
+            self.bombs_positions.add((rand_row, rand_col))
+            # Assign as bomb
+            self.grid[rand_row][rand_col].is_bomb = True
 
+    # Gen random number of bombs and assign the cells
     def build_grid(self):
         self._gen_num_bombs()
         self._gen_pos_bombs()
@@ -67,7 +81,7 @@ class Minesweeper:
                 # we are out of range
                 continue
 
-            if row >= self.grid_coordinates[0] or col >= self.grid_coordinates[1]:
+            if row >= self.grid_coordinates.col or col >= self.grid_coordinates.row:
                 continue
 
             neigh_positions.append((row, col))
@@ -78,7 +92,7 @@ class Minesweeper:
         bombs_around = 0
 
         # Check if user clicked somewere impossible
-        if (x < 0 or x >= self.grid_coordinates[0]) or (y < 0 or y >= self.grid_coordinates[1]):
+        if (x < 0 or x >= self.grid_coordinates.row) or (y < 0 or y >= self.grid_coordinates.col):
             return "Out of Bound"
 
         if self.grid[x][y].is_bomb:
