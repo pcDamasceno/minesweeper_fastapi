@@ -1,4 +1,19 @@
 ## Instructions
+Minesweeper is a single player game. In this game we have a field (grid with squares) with some hidden
+bombs and the goal is to open/clean all the squares without a bomb and if the player hits a bomb, then s/he
+loses the game. If the player can open all the squares without a bomb, then s/he wins the game! For more
+details, please see https://en.wikipedia.org/wiki/Minesweeper_(video_game)
+You are going to build a version of this game with the following requirements:
+
+### Requirements:
+1. Single player game.
+2. Computer will randomly choose squares to place the bombs.
+3. If the grid is a safe one, it should show the number of bombs in its neighbouring squares.
+4. If the player loses the game by pressing on a bomb, then the new game should start with the same
+grid. (same bombs)
+5. Until the player wants to quit, they should be able to continue with a new game.
+6. Flagging a square as a bomb is optional. You can skip this feature if you would like. (As long as the
+player opens all the squares without a bomb, the player wins the game)
 
 ## Build DOCKER environment
 
@@ -29,12 +44,13 @@ If you already have fastapi on you system
             "col": 5
             }' 
 
-
+    Check Items
         localhost/minesweeper/{item}
             item[status, get_grid, show_bombs]
                 status: True if game is still ongoing
                 get_grid: return the grid of the system
-                show_bombs: display the position of the bombs (used for validation)
+                **show_bombs**: display the position of the bombs (used for validation)
+            
             curl -X 'GET' \
                 'http://localhost:8000/minesweeper/show_bombs' \
                 -H 'accept: application/json'
