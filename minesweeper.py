@@ -84,8 +84,7 @@ class Minesweeper:
             if row < 0 or col < 0:
                 # we are out of range
                 continue
-
-            if row >= self.grid_coordinates.col or col >= self.grid_coordinates.row:
+            if row >= self.grid_coordinates.row or col >= self.grid_coordinates.col:
                 # out of range
                 continue
 
@@ -110,6 +109,7 @@ class Minesweeper:
             return "BOOOM!"
 
         neighbors = self.list_neigh(row_idx, col_idx)
+
         # number of bombs around us
         for n in neighbors:
             if self.grid[n[0]][n[1]].is_bomb:
