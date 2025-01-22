@@ -4,86 +4,85 @@ from minesweeper import Minesweeper
 from pydantic import BaseModel
 
 app = FastAPI()
-app.state.ms = None
+app.state.minesweeper = None
 
-class RowCol(BaseModel):
+
+class GridCoordinates(BaseModel):
     row: int
     col: int
 
 
 def start_game(row=10, col=10):
-    # Initialize the Minesweeper game once at startup
-    app.state.ms = Minesweeper(row, col)
-    app.state.ms.build_grid()
-    return app.state.ms
+    # Initialize the Minesweeper game
+    app.state.minesweeper = Minesweeper(row, col)
+    app.state.minesweeper.build_grid()
+    return app.state.minesweeper
+
 
 def get_game_instance():
-    ms = app.state.ms 
-    if ms is None:
+    minesweeper = app.state.minesweeper
+    if minesweeper is None:
         raise HTTPException(status_code=500, detail="Game not started.")
-    if not ms.game:
-        raise HTTPException(status_code=500, detail="You Hit a Bomb, restart to continue")
-    return ms
+    if not minesweeper.game:
+        raise HTTPException(
+            status_code=500, detail="You Hit a Bomb. Restart to continue"
+        )
+    return minesweeper
+
 
 @app.get("/")
 def instructions():
-    context = {
-        "instructions": "These are the game instructoins"
-    }
+    context = {"instructions": "These are the game instructoins"}
     return context
+
 
 # Start the game
 @app.get("/start")
-def start(row_col: RowCol) -> dict:
-    context = {
-        "requested": f"Grid {row_col.row}x{row_col.col}"
-    }
+def start(grid_coordinates: GridCoordinates) -> dict:
+    context = {"requested": f"Grid {grid_coordinates.row}x{grid_coordinates.col}"}
 
+    minesweeper = start_game(grid_coordinates.row, grid_coordinates.col)
 
-    ms = start_game(row_col.row, row_col.col)
-    
     context["status"] = (
-        f"Game Started: rows: {row_col.row}, cols: {row_col.col} "
-        f"Number of bombs: {ms.n_of_bombs}"
+        f"Game Started: rows: {grid_coordinates.row}, cols: {grid_coordinates.col} "
+        f"Number of bombs: {minesweeper.n_of_bombs}"
     )
 
-    context["response"] = ms.to_json_serializable_grid()
-
+    context["response"] = minesweeper.to_json_serializable_grid()
 
     return context
+
 
 # Get info after it started
 @app.get("/minesweeper/{item}")
 def minesweeper(item):
-    ms = get_game_instance()
+    minesweeper = get_game_instance()
 
-    context = {
-        "requested": item
-    }
+    context = {"requested": item}
 
     match item:
         case "status":
-            context["response"] = f"Game status is : {ms.game}"
-        case "get_grid":           
-            context["response"] = ms.to_json_serializable_grid()
+            context["response"] = f"Game status is : {minesweeper.game}"
+        case "get_grid":
+            context["response"] = minesweeper.to_json_serializable_grid()
             return context
-        
         case "show_bombs":
-            context["response"] = list(ms.bombs_positions)
-        case _:    
+            context["response"] = list(minesweeper.bombs_positions)
+        case _:
             context["response"] = "Invalid/ Unkown item"
 
     return context
 
+
 @app.get("/click")
-def click(click: RowCol):
+def click(click: GridCoordinates):
     context = {"request": click}
-    ms = get_game_instance()
-    
-    context["response"] = ms.click(click.row, click.col)
+    minesweeper = get_game_instance()
+
+    context["response"] = minesweeper.click(click.row, click.col)
 
     # Check if we won
-    if ms.check_win():
-        context["win"] = 'Congratulations!'
+    if minesweeper.check_win():
+        context["win"] = "Congratulations!"
 
     return context
