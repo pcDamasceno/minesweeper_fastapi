@@ -24,7 +24,7 @@ class Cell:
 
 class Minesweeper:
     def __init__(self, row=10, col=10):
-        self.row_col = (row, col)
+        self.grid_coordinates = (row, col)
         self.n_of_bombs = 0
         self.bombs_positions = set()
         self.grid = [[Cell() for c in range(col)] for r in range(row)]
@@ -36,13 +36,13 @@ class Minesweeper:
     # random generation for number of bombs
     def _gen_num_bombs(self):
         # Limit the amount of bombs to half of the grid
-        self.n_of_bombs = random.randint(1, (self.row_col[0] * self.row_col[1]) // 2)
+        self.n_of_bombs = random.randint(1, (self.grid_coordinates[0] * self.grid_coordinates[1]) // 2)
         return self.n_of_bombs
 
     def _gen_pos_bombs(self):
         while len(self.bombs_positions) < self.n_of_bombs:
-            row = random.randrange(0, self.row_col[0])
-            col = random.randrange(0, self.row_col[1])
+            row = random.randrange(0, self.grid_coordinates[0])
+            col = random.randrange(0, self.grid_coordinates[1])
             self.bombs_positions.add((row, col))
             self.grid[row][col].is_bomb = True
 
@@ -67,7 +67,7 @@ class Minesweeper:
                 # we are out of range
                 continue
 
-            if row >= self.row_col[0] or col >= self.row_col[1]:
+            if row >= self.grid_coordinates[0] or col >= self.grid_coordinates[1]:
                 continue
 
             neigh_positions.append((row, col))
@@ -78,7 +78,7 @@ class Minesweeper:
         bombs_around = 0
 
         # Check if user clicked somewere impossible
-        if (x < 0 or x >= self.row_col[0]) or (y < 0 or y >= self.row_col[1]):
+        if (x < 0 or x >= self.grid_coordinates[0]) or (y < 0 or y >= self.grid_coordinates[1]):
             return "Out of Bound"
 
         if self.grid[x][y].is_bomb:
@@ -105,8 +105,8 @@ class Minesweeper:
 
     def check_win(self):
         # Look for a cell that is not opened and is not bomb
-        for r in range(self.row_col[0]):
-            for c in range(self.row_col[1]):
+        for r in range(self.grid_coordinates[0]):
+            for c in range(self.grid_coordinates[1]):
                 if not (self.grid[r][c].is_open) and not (self.grid[r][c].is_bomb):
                     return False
         return True

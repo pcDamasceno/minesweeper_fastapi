@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import Response
 from minesweeper import Minesweeper
 from pydantic import BaseModel
 
@@ -55,7 +54,7 @@ def start(grid_coordinates: GridCoordinates) -> dict:
 
 # Get info after it started
 @app.get("/minesweeper/{item}")
-def minesweeper(item):
+def check_status(item):
     minesweeper = get_game_instance()
 
     context = {"requested": item}
