@@ -109,8 +109,14 @@ class Minesweeper:
 
         # Hit bomb
         if self.grid[row_idx][col_idx].is_bomb:
-            self.game = False
-            return "BOOOM!"
+            self.game = True
+            # Restart the game
+            self.grid = [[Cell() for c in range(self.grid_coordinates.col)] for r in range(self.grid_coordinates.row)]
+            for pos in self.bombs_positions:
+                rand_row = pos[0]
+                rand_col = pos[1]
+                self.grid[rand_row][rand_col].is_bomb = True
+            return "BOOOM! Game Restarted. Try again."
 
         neighbors = self.list_neigh(row_idx, col_idx)
 
