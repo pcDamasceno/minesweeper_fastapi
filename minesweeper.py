@@ -24,7 +24,7 @@ class Cell:
 
     def __repr__(self):
         # return the number of bombs around the cell
-        if self.is_flagged:
+        if self.is_flagged and not self.is_open:
             return "F"
         return str(self.bombs_around) if self.is_open else "X"
 
