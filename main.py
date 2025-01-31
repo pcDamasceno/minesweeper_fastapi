@@ -85,3 +85,12 @@ def click(click: GridCoordinates):
         context["win"] = "Congratulations!"
 
     return context
+
+@app.get("/flag")
+def click(click: GridCoordinates):
+    context = {"request": click}
+    minesweeper = get_game_instance()
+
+    context["response"] = minesweeper.flag(click.row, click.col)
+
+    return context

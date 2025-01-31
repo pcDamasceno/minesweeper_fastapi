@@ -14,6 +14,7 @@ class Cell:
         self.is_bomb = is_bomb
         self.is_open = is_open
         self.bombs_around = False
+        self.is_flagged = False
 
     # Open a cell, and add the number of bombs around it
     def open(self, bombs_around):
@@ -22,6 +23,9 @@ class Cell:
         return self.is_open
 
     def __repr__(self):
+        # return the number of bombs around the cell
+        if self.is_flagged:
+            return "F"
         return str(self.bombs_around) if self.is_open else "X"
 
 
@@ -121,6 +125,10 @@ class Minesweeper:
         # return to the user the updated grid
         return self.to_json_serializable_grid()
 
+    def flag(self, row_idx, col_idx):
+        self.grid[row_idx][col_idx].is_flagged = 'F'
+        return self.to_json_serializable_grid()
+    
     def show_grid(self):
         return json.dumps(self.grid, indent=4)
 
